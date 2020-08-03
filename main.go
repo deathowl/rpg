@@ -5,13 +5,12 @@ import (
 	"math"
 	"time"
 
-	"golang.org/x/image/colornames"
-
+	"github.com/deathowl/rpg/player"
 	"github.com/deathowl/rpg/world"
 	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/lafriks/go-tiled"
+	"golang.org/x/image/colornames"
 )
 
 var clearColor = colornames.Black
@@ -36,7 +35,19 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 	mat := pixel.IM
 	mat = mat.Moved(win.Bounds().Center())
 	mat = mat.ScaledXY(win.Bounds().Center(), pixel.V(win.Bounds().Size().X/renderedBg.Bounds().Size().X, win.Bounds().Size().Y/renderedBg.Bounds().Size().Y))
-	fmt.Println(mat)
+	sheet, anims, err := player.LoadAnimationSheet("assets/sheet.png", "assets/spritesheet.csv", 12)
+	panicIfErr(err)
+	phys := &player.PlayerPhys{
+		RunSpeed: 64,
+	}
+	anim := &player.PlayerAnim{
+		Sheet: sheet,
+		Anims: anims,
+		Rate:  1.0 / 10,
+		Dir:   +1,
+	}
+	fmt.Println(phys)
+	fmt.Println(anim)
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
 		last = time.Now()
@@ -75,10 +86,14 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 			batch.Clear()
 		}
 		rsprirte.Draw(win, mat)
-		imd := imdraw.New(nil)
-		imd.Push(camPos)
-		imd.Circle(3.0, 2.0)
-		imd.Draw(win)
+		// imd := imdraw.New(nil)
+		// imd.Push(camPos)
+		// imd.Circle(3.0, 2.0)
+		// imd.Draw(win)
+		phys.Update(dt, camPos)
+		anim.Update(dt, phys)
+		anim.Draw(win, &camPos)
+
 		frames++
 		select {
 		case <-second:
@@ -104,7 +119,7 @@ func initialize() {
 	panicIfErr(err)
 
 	// Initialize art assets (i.e. the tilemap)
-	tilemap := world.LoadTileMap("./island.tmx")
+	tilemap := world.LoadTileMap("./assets/island.tmx")
 	fmt.Println(tilemap)
 	renderedBg := world.RenderTilemap(&tilemap)
 

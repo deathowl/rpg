@@ -1,37 +1,35 @@
 package player
-import 	"github.com/faiface/pixel"
 
-type playerPhys struct {
-	gravity   float64
-	runSpeed  float64
-	jumpSpeed float64
+import "github.com/faiface/pixel"
 
-	rect   pixel.Rect
+type PlayerPhys struct {
+	RunSpeed float64
+
 	vel    pixel.Vec
 	ground bool
 }
 
-func (pp *playerPhys) update(dt float64, ctrl pixel.Vec) {
+func (pp *PlayerPhys) Update(dt float64, ctrl pixel.Vec) {
 	// apply controls
 	switch {
 	case ctrl.X < 0:
-		pp.vel.X = -pp.runSpeed
+		pp.vel.X = -pp.RunSpeed
 	case ctrl.X > 0:
-		pp.vel.X = +pp.runSpeed
+		pp.vel.X = +pp.RunSpeed
 	default:
 		pp.vel.X = 0
 	}
 	switch {
 	case ctrl.Y < 0:
-		pp.vel.Y = -pp.runSpeed
+		pp.vel.Y = -pp.RunSpeed
 	case ctrl.Y > 0:
-		pp.vel.Y = +pp.runSpeed
+		pp.vel.Y = +pp.RunSpeed
 	default:
 		pp.vel.X = 0
 	}
 
 	// apply gravity and velocity
-	pp.rect = pp.rect.Moved(pp.vel.Scaled(dt))
+	//pp.rect = pp.rect.Moved(pp.vel.Scaled(dt))
 
 	// check collisions against each platform
 	// gp.ground = false
