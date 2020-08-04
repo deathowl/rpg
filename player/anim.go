@@ -2,6 +2,7 @@ package player
 
 import (
 	"encoding/csv"
+	"fmt"
 	"image"
 	_ "image/png"
 	"io"
@@ -100,11 +101,15 @@ func (pa *PlayerAnim) Update(dt float64, phys *PlayerPhys) {
 
 	// determine the new animation state
 	var newState animState
+	fmt.Println(phys.vel)
+	var aRate float64
 	switch {
 	case phys.vel.Len() == 0:
 		newState = idle
+		aRate = .6
 	case phys.vel.Len() > 0:
 		newState = walk
+		aRate = pa.Rate
 	}
 
 	// reset the time counter if the state changed
@@ -114,11 +119,11 @@ func (pa *PlayerAnim) Update(dt float64, phys *PlayerPhys) {
 	}
 
 	// determine the correct animation frame
+	i := int(math.Floor(pa.Counter / aRate))
 	switch pa.state {
 	case idle:
-		pa.frame = pa.Anims["Front"][0]
+		pa.frame = pa.Anims["Front"][i%len(pa.Anims["Front"])]
 	case walk:
-		i := int(math.Floor(pa.Counter / pa.Rate))
 		pa.frame = pa.Anims["Run"][i%len(pa.Anims["Run"])]
 	}
 
@@ -139,10 +144,6 @@ func (pa *PlayerAnim) Draw(t pixel.Target, camPos *pixel.Vec) {
 	// draw the correct frame with the correct position and direction
 	pa.sprite.Set(pa.Sheet, pa.frame)
 	pa.sprite.Draw(t, pixel.IM.
-		//ScaledXY(pixel.ZV, pixel.V(
-		//	cam.W()/pa.sprite.Frame().W(),
-		//	phys.rect.H()/pa.sprite.Frame().H(),
-		//)).
 		ScaledXY(pixel.ZV, pixel.V(-pa.Dir, 1)).
 		Moved(*camPos),
 	)

@@ -1,31 +1,45 @@
 package player
 
-import "github.com/faiface/pixel"
+import (
+	"fmt"
+
+	"github.com/faiface/pixel"
+)
+
+type Direction int
+
+const (
+	IDLE Direction = iota
+	UP
+	DOWN
+	LEFT
+	RIGHT
+)
 
 type PlayerPhys struct {
 	RunSpeed float64
-
-	vel    pixel.Vec
-	ground bool
+	vel      pixel.Vec
+	ground   bool
 }
 
-func (pp *PlayerPhys) Update(dt float64, ctrl pixel.Vec) {
+func (pp *PlayerPhys) Update(dt float64, ctrl pixel.Vec, d Direction) {
+	fmt.Println(pp.vel)
 	// apply controls
-	switch {
-	case ctrl.X < 0:
+	switch d {
+	case LEFT:
 		pp.vel.X = -pp.RunSpeed
-	case ctrl.X > 0:
+	case RIGHT:
 		pp.vel.X = +pp.RunSpeed
 	default:
 		pp.vel.X = 0
 	}
-	switch {
-	case ctrl.Y < 0:
+	switch d {
+	case UP:
 		pp.vel.Y = -pp.RunSpeed
-	case ctrl.Y > 0:
+	case DOWN:
 		pp.vel.Y = +pp.RunSpeed
 	default:
-		pp.vel.X = 0
+		pp.vel.Y = 0
 	}
 
 	// apply gravity and velocity

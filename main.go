@@ -55,7 +55,9 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		// Camera movement
 		cam := pixel.IM.Scaled(camPos, camZoom).Moved(win.Bounds().Center().Sub(camPos))
 		win.SetMatrix(cam)
+		var curdir player.Direction
 		if win.Pressed(pixelgl.KeyLeft) {
+			curdir = player.LEFT
 			if camPos.X > camSpeed*dt {
 				camPos.X -= camSpeed * dt
 			} else {
@@ -63,14 +65,18 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 			}
 		}
 		if win.Pressed(pixelgl.KeyRight) {
+			curdir = player.RIGHT
+
 			if camPos.X < win.Bounds().Size().X-camSpeed*dt {
 				camPos.X += camSpeed * dt
 			}
 		}
 		if win.Pressed(pixelgl.KeyDown) {
+			curdir = player.DOWN
 			camPos.Y -= camSpeed * dt
 		}
 		if win.Pressed(pixelgl.KeyUp) {
+			curdir = player.UP
 			camPos.Y += camSpeed * dt
 		}
 		if win.Pressed(pixelgl.KeySpace) {
@@ -90,7 +96,7 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		// imd.Push(camPos)
 		// imd.Circle(3.0, 2.0)
 		// imd.Draw(win)
-		phys.Update(dt, camPos)
+		phys.Update(dt, camPos, curdir)
 		anim.Update(dt, phys)
 		anim.Draw(win, &camPos)
 
