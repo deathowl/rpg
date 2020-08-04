@@ -1,8 +1,6 @@
 package player
 
 import (
-	"fmt"
-
 	"github.com/faiface/pixel"
 )
 
@@ -23,7 +21,6 @@ type PlayerPhys struct {
 }
 
 func (pp *PlayerPhys) Update(dt float64, ctrl pixel.Vec, d Direction) {
-	fmt.Println(pp.vel)
 	// apply controls
 	switch d {
 	case LEFT:

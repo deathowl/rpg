@@ -46,8 +46,6 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		Rate:  1.0 / 10,
 		Dir:   +1,
 	}
-	fmt.Println(phys)
-	fmt.Println(anim)
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
 		last = time.Now()
@@ -126,24 +124,22 @@ func initialize() {
 
 	// Initialize art assets (i.e. the tilemap)
 	tilemap := world.LoadTileMap("./assets/island.tmx")
-	fmt.Println(tilemap)
 	renderedBg := world.RenderTilemap(&tilemap)
 
 	startPos := win.Bounds().Center()
 	scalingFacX := win.Bounds().Size().X / renderedBg.Bounds().Size().X
 	scalingFacY := renderedBg.Bounds().Size().Y / win.Bounds().Size().Y
 	for _, ob := range tilemap.ObjectGroups[0].Objects {
-		fmt.Println(ob.Name)
 		if ob.Type == "start" {
-			fmt.Println(ob.X)
-			fmt.Println(scalingFacX)
-			fmt.Println(ob.Y)
-			fmt.Println(scalingFacY)
+			//fmt.Println(ob.X)
+			//fmt.Println(scalingFacX)
+			//fmt.Println(ob.Y)
+			//fmt.Println(scalingFacY)
 			startPos = pixel.Vec{X: ob.X * scalingFacX, Y: ob.Y * scalingFacY}
-			fmt.Println(startPos.X)
-			fmt.Println(startPos.Y)
+			//fmt.Println(startPos.X)
+			//fmt.Println(startPos.Y)
 		}
-		fmt.Printf("%+v\n", ob)
+		//fmt.Printf("%+v\n", ob)
 	}
 
 	fmt.Println("use WASD to move camera around")

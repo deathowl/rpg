@@ -37,6 +37,7 @@ func LoadAnimationSheet(sheetPath, descPath string, frameWidth float64) (sheet p
 	// create a slice of frames inside the spritesheet
 	var frames []pixel.Rect
 	for x := 0.0; x+frameWidth <= sheet.Bounds().Max.X; x += frameWidth {
+		fmt.Println(x)
 		frames = append(frames, pixel.R(
 			x,
 			0,
@@ -79,6 +80,8 @@ type animState int
 const (
 	idle animState = iota
 	walk
+	walkup
+	walkdown
 	attack
 )
 
@@ -101,7 +104,6 @@ func (pa *PlayerAnim) Update(dt float64, phys *PlayerPhys) {
 
 	// determine the new animation state
 	var newState animState
-	fmt.Println(phys.vel)
 	var aRate float64
 	switch {
 	case phys.vel.Len() == 0:
@@ -110,6 +112,12 @@ func (pa *PlayerAnim) Update(dt float64, phys *PlayerPhys) {
 	case phys.vel.Len() > 0:
 		newState = walk
 		aRate = pa.Rate
+	}
+	if phys.vel.X == 0 && phys.vel.Y < 0 {
+		newState = walkup
+	}
+	if phys.vel.X == 0 && phys.vel.Y > 0 {
+		newState = walkdown
 	}
 
 	// reset the time counter if the state changed
@@ -122,9 +130,14 @@ func (pa *PlayerAnim) Update(dt float64, phys *PlayerPhys) {
 	i := int(math.Floor(pa.Counter / aRate))
 	switch pa.state {
 	case idle:
-		pa.frame = pa.Anims["Front"][i%len(pa.Anims["Front"])]
+		pa.frame = pa.Anims["LeftRight"][i%len(pa.Anims["LeftRight"])]
 	case walk:
-		pa.frame = pa.Anims["Run"][i%len(pa.Anims["Run"])]
+		pa.frame = pa.Anims["Walk"][i%len(pa.Anims["Walk"])]
+	case walkup:
+		pa.frame = pa.Anims["WalkUp"][i%len(pa.Anims["WalkUp"])]
+	case walkdown:
+		pa.frame = pa.Anims["WalkDown"][i%len(pa.Anims["WalkDown"])]
+
 	}
 
 	// set the facing direction of the gopher
