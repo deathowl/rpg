@@ -1,7 +1,7 @@
 package world
 
 import (
-	"github.com/lafriks/go-tiled"
+	"github.com/deathowl/go-tiled"
 )
 
 func LoadTileMap(path string) tiled.Map {

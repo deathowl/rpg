@@ -1,9 +1,9 @@
 package world
 
 import (
+	"github.com/deathowl/go-tiled"
+	"github.com/deathowl/go-tiled/render"
 	"github.com/faiface/pixel"
-	"github.com/lafriks/go-tiled"
-	"github.com/lafriks/go-tiled/render"
 )
 
 func RenderTilemap(tilemap *tiled.Map) *pixel.PictureData {

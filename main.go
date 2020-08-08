@@ -5,11 +5,11 @@ import (
 	"math"
 	"time"
 
+	"github.com/deathowl/go-tiled"
 	"github.com/deathowl/rpg/player"
 	"github.com/deathowl/rpg/world"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/lafriks/go-tiled"
 	"golang.org/x/image/colornames"
 )
 
@@ -20,7 +20,7 @@ var (
 	second = time.Tick(time.Second)
 )
 
-func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, initialPos *pixel.Vec) {
+func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, initialPos *pixel.Vec, boundaries *[]pixel.Line) {
 	batches := make([]*pixel.Batch, 0)
 
 	var (
@@ -129,6 +129,7 @@ func initialize() {
 	startPos := win.Bounds().Center()
 	scalingFacX := win.Bounds().Size().X / renderedBg.Bounds().Size().X
 	scalingFacY := renderedBg.Bounds().Size().Y / win.Bounds().Size().Y
+	boundaries := make([]pixel.Line, 0)
 	for _, ob := range tilemap.ObjectGroups[0].Objects {
 		if ob.Type == "start" {
 			//fmt.Println(ob.X)
@@ -139,11 +140,32 @@ func initialize() {
 			//fmt.Println(startPos.X)
 			//fmt.Println(startPos.Y)
 		}
+		if ob.Type == "border" {
+			var prevPoint *tiled.Point
+			points := *ob.Polygons[0].Points
+			for idx, p := range points {
+				if idx == 0 {
+					prevPoint = p
+				} else if idx == len(points)-1 {
+					l1 := pixel.L(pixel.V(prevPoint.X, prevPoint.Y), pixel.V(p.X, p.Y))
+					l2 := pixel.L(pixel.V(p.X, p.Y), pixel.V(points[0].X, points[0].Y))
+					boundaries = append(boundaries, l1, l2)
+
+				} else {
+					boundaries = append(boundaries, pixel.L(pixel.V(prevPoint.X, prevPoint.Y), pixel.V(p.X, p.Y)))
+					prevPoint = p
+				}
+				fmt.Println(boundaries)
+			}
+		}
+		if ob.Type == "collider" {
+			fmt.Printf("%+v\n", ob)
+		}
 		//fmt.Printf("%+v\n", ob)
 	}
 
 	fmt.Println("use WASD to move camera around")
-	gameloop(win, &tilemap, renderedBg, &startPos)
+	gameloop(win, &tilemap, renderedBg, &startPos, &boundaries)
 
 }
 

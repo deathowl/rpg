@@ -2,7 +2,6 @@ package player
 
 import (
 	"encoding/csv"
-	"fmt"
 	"image"
 	_ "image/png"
 	"io"
@@ -37,7 +36,6 @@ func LoadAnimationSheet(sheetPath, descPath string, frameWidth float64) (sheet p
 	// create a slice of frames inside the spritesheet
 	var frames []pixel.Rect
 	for x := 0.0; x+frameWidth <= sheet.Bounds().Max.X; x += frameWidth {
-		fmt.Println(x)
 		frames = append(frames, pixel.R(
 			x,
 			0,
