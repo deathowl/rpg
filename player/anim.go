@@ -111,10 +111,10 @@ func (pa *PlayerAnim) Update(dt float64, phys *PlayerPhys) {
 		newState = walk
 		aRate = pa.Rate
 	}
-	if phys.vel.X == 0 && phys.vel.Y < 0 {
+	if phys.vel.X == 0 && phys.vel.Y > 0 {
 		newState = walkup
 	}
-	if phys.vel.X == 0 && phys.vel.Y > 0 {
+	if phys.vel.X == 0 && phys.vel.Y < 0 {
 		newState = walkdown
 	}
 
