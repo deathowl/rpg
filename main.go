@@ -21,17 +21,18 @@ var (
 	second = time.Tick(time.Second)
 )
 
-func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, initialPos *pixel.Vec, colliders *[]interface{}) {
+func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, renderedFg pixel.Picture, initialPos *pixel.Vec, colliders *[]interface{}) {
 	batches := make([]*pixel.Batch, 0)
 	var (
 		camPos       = *initialPos
-		camSpeed     = 50.0
+		camSpeed     = 40.0
 		camZoom      = 4.0
 		camZoomSpeed = 1.2
 	)
 
 	last := time.Now()
-	rsprirte := pixel.NewSprite(renderedBg, renderedBg.Bounds())
+	bgsprite := pixel.NewSprite(renderedBg, renderedBg.Bounds())
+	fgsprite := pixel.NewSprite(renderedFg, renderedFg.Bounds())
 	mat := pixel.IM
 	mat = mat.Moved(win.Bounds().Center())
 	mat = mat.ScaledXY(win.Bounds().Center(), pixel.V(win.Bounds().Size().X/renderedBg.Bounds().Size().X, win.Bounds().Size().Y/renderedBg.Bounds().Size().Y))
@@ -80,41 +81,31 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		for _, batch := range batches {
 			batch.Clear()
 		}
-		rsprirte.Draw(win, mat)
-		// imd := imdraw.New(nil)
-		// imd.SetMatrix(mat)
-		// for _, b := range *boundaries {
-		// 	imd.Push(b.A)
-		// 	imd.Push(b.B)
-		// 	imd.Line(1)
-		// }
-		charcolliderd := imdraw.New(nil)
-		charcolliderd.Push(camPos)
-		charcolliderd.Circle(8, 1)
+		bgsprite.Draw(win, mat)
 		colliderd := imdraw.New(nil)
-		colliderd.SetMatrix(mat)
+		colliderd.Push(camPos)
+		colliderd.Circle(8, 1)
 		for _, collider := range *colliders {
 			switch v := collider.(type) {
 			case pixel.Circle:
-				charcolliderd.Push(v.Center)
-				charcolliderd.Circle(v.Radius, 1)
+				colliderd.Push(v.Center)
+				colliderd.Circle(v.Radius, 1)
 			case pixel.Rect:
-				charcolliderd.Push(v.Min, v.Max)
-				charcolliderd.Rectangle(1)
+				colliderd.Push(v.Min, v.Max)
+				colliderd.Rectangle(1)
 			case pixel.Line:
-				charcolliderd.Push(v.A, v.B)
-				charcolliderd.Line(1)
+				colliderd.Push(v.A, v.B)
+				colliderd.Line(1)
 			}
 		}
 		//imd.Draw(win)
-		if win.Pressed(pixelgl.KeyRightControl) {
-			colliderd.Draw(win)
-			charcolliderd.Draw(win)
-		}
 
 		anim.Update(dt, phys)
 		anim.Draw(win, &camPos)
-
+		fgsprite.Draw(win, mat)
+		if win.Pressed(pixelgl.KeyRightControl) {
+			colliderd.Draw(win)
+		}
 		frames++
 		select {
 		case <-second:
@@ -141,16 +132,20 @@ func initialize() {
 
 	// Initialize art assets (i.e. the tilemap)
 	tilemap := world.LoadTileMap("./assets/island.tmx")
-	renderedBg := world.RenderTilemap(&tilemap)
+	renderedBg := world.RenderBackground(&tilemap)
+	renderedFg := world.RenderForeground(&tilemap)
 
 	startPos := win.Bounds().Center()
 	scalingFacX := win.Bounds().Size().X / renderedBg.Bounds().Size().X
 	scalingFacY := win.Bounds().Size().Y / renderedBg.Bounds().Size().Y
 	colliders := make([]interface{}, 0)
 	for _, ob := range tilemap.ObjectGroups[0].Objects {
-		flipY(ob, renderedBg.Bounds().Size().Y)
-		scaleX(ob, scalingFacX)
-		scaleY(ob, scalingFacY)
+		if ob.Type != "border" {
+			flipY(ob, renderedBg.Bounds().Size().Y)
+			scaleX(ob, scalingFacX)
+			scaleY(ob, scalingFacY)
+		}
+
 		if ob.Type == "start" {
 			//startPos = pixel.V(ob.X, math.Abs(ob.Y)).ScaledXY(scalingVec)
 			startPos = pixel.Vec{X: ob.X, Y: ob.Y}
@@ -159,35 +154,40 @@ func initialize() {
 			var prevPoint *tiled.Point
 			points := *ob.Polygons[0].Points
 			for idx, p := range points {
-				PFlipY(p, renderedBg.Bounds().Size().Y)
-				PScaleX(p, scalingFacX)
-				PScaleY(p, scalingFacY)
-				fmt.Println(p)
 				if idx == 0 {
 					prevPoint = p
 				} else if idx == len(points)-1 {
 					l1 := pixel.L(pixel.V(ob.X+prevPoint.X, ob.Y+prevPoint.Y), pixel.V(ob.X+p.X, ob.Y+p.Y))
+					LFlipY(&l1, renderedBg.Bounds().Size().Y)
+					LScaleX(&l1, scalingFacX)
+					LScaleY(&l1, scalingFacY)
 					l2 := pixel.L(pixel.V(ob.X+p.X, ob.Y+p.Y), pixel.V(ob.X+points[0].X, ob.Y+points[0].Y))
+					LFlipY(&l2, renderedBg.Bounds().Size().Y)
+					LScaleX(&l2, scalingFacX)
+					LScaleY(&l2, scalingFacY)
 					colliders = append(colliders, l1, l2)
 
 				} else {
-					colliders = append(colliders, pixel.L(pixel.V(ob.X+prevPoint.X, ob.Y+prevPoint.Y), pixel.V(ob.X+p.X, ob.Y+p.Y)))
+					coll := pixel.L(pixel.V(ob.X+prevPoint.X, ob.Y+prevPoint.Y), pixel.V(ob.X+p.X, ob.Y+p.Y))
+					LFlipY(&coll, renderedBg.Bounds().Size().Y)
+					LScaleX(&coll, scalingFacX)
+					LScaleY(&coll, scalingFacY)
+					colliders = append(colliders, coll)
 					prevPoint = p
 				}
 			}
 		}
 		if ob.Type == "collider" {
 			if len(ob.Ellipses) > 0 {
-				colliders = append(colliders, pixel.C(pixel.V(ob.X, ob.Y), ob.Width/2))
+				colliders = append(colliders, pixel.C(pixel.V(ob.X+8, ob.Y+8), ob.Width/2))
 			} else {
-				colliders = append(colliders, pixel.R(ob.X, ob.Y, ob.X+ob.Width, ob.Y+ob.Height))
+				colliders = append(colliders, pixel.R(ob.X, ob.Y, ob.X+ob.Width*scalingFacX, ob.Y+ob.Height*scalingFacY))
 			}
 		}
-		//fmt.Printf("%+v\n", ob)
 	}
 
 	fmt.Println("use WASD to move camera around")
-	gameloop(win, &tilemap, renderedBg, &startPos, &colliders)
+	gameloop(win, &tilemap, renderedBg, renderedFg, &startPos, &colliders)
 
 }
 
@@ -200,14 +200,19 @@ func scaleX(p *tiled.Object, scalingFac float64) {
 func scaleY(p *tiled.Object, scalingFac float64) {
 	p.Y = p.Y * scalingFac
 }
-func PFlipY(o *tiled.Point, totalHeight float64) {
-	o.Y = totalHeight - o.Y - 1
+func LFlipY(o *pixel.Line, totalHeight float64) {
+	o.A.Y = totalHeight - o.A.Y - 1
+	o.B.Y = totalHeight - o.B.Y - 1
+
 }
-func PScaleX(o *tiled.Point, scalingFac float64) {
-	o.X = scalingFac * o.X
+func LScaleX(o *pixel.Line, scalingFac float64) {
+	o.A.X = o.A.X * scalingFac
+	o.B.X = o.B.X * scalingFac
+
 }
-func PScaleY(o *tiled.Point, scalingFac float64) {
-	o.Y = scalingFac * o.Y
+func LScaleY(o *pixel.Line, scalingFac float64) {
+	o.A.Y = o.A.Y * scalingFac
+	o.B.Y = o.B.Y * scalingFac
 }
 
 func main() {
