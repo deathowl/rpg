@@ -59,15 +59,7 @@
    <properties>
     <property name="ai" value="critter"/>
     <property name="health" value="100"/>
-    <property name="sheetsize" type="int" value="64"/>
-    <property name="spritesheet" value="crab"/>
-   </properties>
-   <ellipse/>
-  </object>
-  <object id="25" name="crab1" x="526" y="325" width="12" height="12">
-   <properties>
-    <property name="ai" value="critter"/>
-    <property name="health" value="100"/>
+    <property name="movementspeed" type="int" value="10"/>
     <property name="sheetsize" type="int" value="64"/>
     <property name="spritesheet" value="crab"/>
    </properties>

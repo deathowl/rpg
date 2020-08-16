@@ -6,7 +6,7 @@ import (
 )
 
 type BaseAi interface {
-	Tick(dt float64, entityPos *pixel.Vec, world *tiled.Map)
+	Tick(dt float64, entityPos pixel.Vec, dir float64, speed float64, world *tiled.Map) (pixel.Vec, float64)
 }
 
 func GetAi(aistr string) BaseAi {

@@ -1,7 +1,6 @@
 package enemy
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 
@@ -34,17 +33,17 @@ type Enemy struct {
 	frame      pixel.Rect
 	Size       float64
 	SpriteSize float64
-
-	sprite *pixel.Sprite
+	RunSpeed   float64
+	sprite     *pixel.Sprite
 }
 
-func NewEnemy(eobj *tiled.Object) Enemy {
+func NewEnemy(eobj *tiled.Object) *Enemy {
 	var enemyAi ai.BaseAi
 	var sheet pixel.Picture
 	var sheetsize float64
 	var anims map[string][]pixel.Rect
+	var spd float64
 	for _, prop := range eobj.Properties {
-		fmt.Println(prop.Name)
 		if prop.Name == "ai" {
 			enemyAi = ai.GetAi(prop.Value)
 		}
@@ -54,31 +53,33 @@ func NewEnemy(eobj *tiled.Object) Enemy {
 		if prop.Name == "spritesheet" {
 			sheet, anims, _ = engine.LoadAnimationSheet("assets/"+prop.Value+".png", "assets/"+prop.Value+".csv", sheetsize)
 		}
+		if prop.Name == "movementspeed" {
+			spd, _ = strconv.ParseFloat(prop.Value, 64)
+		}
 
 	}
-	return Enemy{Ai: enemyAi, Sheet: sheet, Anims: anims, Rate: 1.0 / 10,
-		Dir: +1, Pos: pixel.V(eobj.X+8, eobj.Y+8), Size: eobj.Width, SpriteSize: sheetsize}
+	return &Enemy{Ai: enemyAi, Sheet: sheet, Anims: anims, Rate: 1.0 / 10,
+		Dir: +1, Pos: pixel.V(eobj.X+8, eobj.Y+8), Size: eobj.Width, SpriteSize: sheetsize, RunSpeed: spd}
 }
 
 func (enemy *Enemy) Update(dt float64, world *tiled.Map) {
-	enemy.Ai.Tick(dt, &enemy.vel, world)
+	enemy.Pos, enemy.Dir = enemy.Ai.Tick(dt, enemy.Pos, enemy.Dir, enemy.RunSpeed, world)
 	enemy.Counter += dt
-
 	// determine the new animation state
 	var newState animState
 	var aRate float64
 	switch {
-	case enemy.vel.Len() == 0:
+	case enemy.Pos.Len() == 0:
 		newState = idle
 		aRate = .6
-	case enemy.vel.Len() > 0:
+	case enemy.Pos.Len() > 0:
 		newState = walk
 		aRate = enemy.Rate
 	}
-	if enemy.vel.X == 0 && enemy.vel.Y > 0 {
+	if enemy.Pos.X == 0 && enemy.vel.Y > 0 {
 		newState = walkup
 	}
-	if enemy.vel.X == 0 && enemy.vel.Y < 0 {
+	if enemy.Pos.X == 0 && enemy.vel.Y < 0 {
 		newState = walkdown
 	}
 
@@ -102,14 +103,6 @@ func (enemy *Enemy) Update(dt float64, world *tiled.Map) {
 
 	}
 
-	// set the facing direction of the gopher
-	if enemy.vel.X != 0 {
-		if enemy.vel.X > 0 {
-			enemy.Dir = +1
-		} else {
-			enemy.Dir = -1
-		}
-	}
 }
 
 func (enemy *Enemy) Draw(t pixel.Target) {
