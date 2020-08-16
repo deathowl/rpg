@@ -78,17 +78,17 @@ func CheckCollisions(v pixel.Vec, colliders *[]interface{}) bool {
 	//fmt.Println(colliders)
 	for _, collider := range *colliders {
 		switch v := collider.(type) {
-		case pixel.Circle:
+		case *pixel.Circle:
 			if v.Intersect(obcollider).Radius != 0 {
 				fmt.Println("collided with ", v)
 				return true
 			}
-		case pixel.Rect:
+		case *pixel.Rect:
 			if v.IntersectCircle(obcollider) != pixel.ZV {
 				fmt.Println("collided with ", v)
 				return true
 			}
-		case pixel.Line:
+		case *pixel.Line:
 			if v.IntersectCircle(obcollider) != pixel.ZV {
 				fmt.Println("collided with ", v)
 				return true

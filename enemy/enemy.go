@@ -35,9 +35,10 @@ type Enemy struct {
 	SpriteSize float64
 	RunSpeed   float64
 	sprite     *pixel.Sprite
+	Collider   *pixel.Circle
 }
 
-func NewEnemy(eobj *tiled.Object) *Enemy {
+func NewEnemy(eobj *tiled.Object, collider *pixel.Circle) *Enemy {
 	var enemyAi ai.BaseAi
 	var sheet pixel.Picture
 	var sheetsize float64
@@ -59,11 +60,11 @@ func NewEnemy(eobj *tiled.Object) *Enemy {
 
 	}
 	return &Enemy{Ai: enemyAi, Sheet: sheet, Anims: anims, Rate: 1.0 / 10,
-		Dir: +1, Pos: pixel.V(eobj.X+8, eobj.Y+8), Size: eobj.Width, SpriteSize: sheetsize, RunSpeed: spd}
+		Dir: +1, Pos: pixel.V(eobj.X+8, eobj.Y+8), Size: eobj.Width, SpriteSize: sheetsize, RunSpeed: spd, Collider: collider}
 }
 
-func (enemy *Enemy) Update(dt float64, world *tiled.Map) {
-	enemy.Pos, enemy.Dir = enemy.Ai.Tick(dt, enemy.Pos, enemy.Dir, enemy.RunSpeed, world)
+func (enemy *Enemy) Update(dt float64, colliders *[]interface{}, playerPos *pixel.Vec) {
+	enemy.Pos, enemy.Dir = enemy.Ai.Tick(dt, enemy.Pos, enemy.Dir, enemy.RunSpeed, colliders, playerPos, enemy.Collider)
 	enemy.Counter += dt
 	// determine the new animation state
 	var newState animState
@@ -82,6 +83,7 @@ func (enemy *Enemy) Update(dt float64, world *tiled.Map) {
 	if enemy.Pos.X == 0 && enemy.vel.Y < 0 {
 		newState = walkdown
 	}
+	enemy.Collider.Center = enemy.Pos
 
 	// reset the time counter if the state changed
 	if enemy.state != newState {

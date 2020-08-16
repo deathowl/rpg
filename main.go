@@ -26,7 +26,7 @@ var (
 func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, renderedFg pixel.Picture, initialPos *pixel.Vec, colliders *[]interface{}, enemies *[]*enemy.Enemy) {
 	batches := make([]*pixel.Batch, 0)
 	var (
-		camPos       = *initialPos
+		playerPos    = *initialPos
 		camSpeed     = 40.0
 		camZoom      = 4.0
 		camZoomSpeed = 1.2
@@ -55,7 +55,7 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		last = time.Now()
 
 		// Camera movement
-		cam := pixel.IM.Scaled(camPos, camZoom).Moved(win.Bounds().Center().Sub(camPos))
+		cam := pixel.IM.Scaled(playerPos, camZoom).Moved(win.Bounds().Center().Sub(playerPos))
 		win.SetMatrix(cam)
 		var curdir player.Direction
 		if win.Pressed(pixelgl.KeyLeft) {
@@ -70,10 +70,10 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		if win.Pressed(pixelgl.KeyUp) {
 			curdir = player.UP
 		}
-		camPos = phys.Update(dt, camPos, curdir)
+		playerPos = phys.Update(dt, playerPos, curdir)
 		if win.Pressed(pixelgl.KeySpace) {
-			fmt.Println(camPos.X)
-			fmt.Println(camPos.Y)
+			fmt.Println(playerPos.X)
+			fmt.Println(playerPos.Y)
 		}
 		camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
 
@@ -85,30 +85,30 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		}
 		bgsprite.Draw(win, mat)
 		colliderd := imdraw.New(nil)
-		colliderd.Push(camPos)
+		colliderd.Push(playerPos)
 		colliderd.Circle(8, 1)
 		for _, collider := range *colliders {
 			switch v := collider.(type) {
-			case pixel.Circle:
+			case *pixel.Circle:
 				colliderd.Push(v.Center)
 				colliderd.Circle(v.Radius, 1)
-			case pixel.Rect:
+			case *pixel.Rect:
 				colliderd.Push(v.Min, v.Max)
 				colliderd.Rectangle(1)
-			case pixel.Line:
+			case *pixel.Line:
 				colliderd.Push(v.A, v.B)
 				colliderd.Line(1)
 			}
 		}
 		anim.Update(dt, phys)
-		anim.Draw(win, &camPos)
+		anim.Draw(win, &playerPos)
 		fgsprite.Draw(win, mat)
+		for _, e := range *enemies {
+			e.Update(dt, colliders, &playerPos)
+			e.Draw(win)
+		}
 		if win.Pressed(pixelgl.KeyRightControl) {
 			colliderd.Draw(win)
-		}
-		for _, e := range *enemies {
-			e.Update(dt, tilemap)
-			e.Draw(win)
 		}
 		frames++
 		select {
@@ -173,23 +173,25 @@ func initialize() {
 					engine.LFlipY(&l2, renderedBg.Bounds().Size().Y)
 					engine.LScaleX(&l2, scalingFacX)
 					engine.LScaleY(&l2, scalingFacY)
-					colliders = append(colliders, l1, l2)
+					colliders = append(colliders, &l1, &l2)
 
 				} else {
 					coll := pixel.L(pixel.V(ob.X+prevPoint.X, ob.Y+prevPoint.Y), pixel.V(ob.X+p.X, ob.Y+p.Y))
 					engine.LFlipY(&coll, renderedBg.Bounds().Size().Y)
 					engine.LScaleX(&coll, scalingFacX)
 					engine.LScaleY(&coll, scalingFacY)
-					colliders = append(colliders, coll)
+					colliders = append(colliders, &coll)
 					prevPoint = p
 				}
 			}
 		}
 		if ob.Type == "collider" {
 			if len(ob.Ellipses) > 0 {
-				colliders = append(colliders, pixel.C(pixel.V(ob.X+8, ob.Y+8), ob.Width/2))
+				coll := pixel.C(pixel.V(ob.X+8, ob.Y+8), ob.Width/2)
+				colliders = append(colliders, &coll)
 			} else {
-				colliders = append(colliders, pixel.R(ob.X, ob.Y, ob.X+ob.Width*scalingFacX, ob.Y+ob.Height*scalingFacY))
+				coll := pixel.R(ob.X, ob.Y, ob.X+ob.Width*scalingFacX, ob.Y+ob.Height*scalingFacY)
+				colliders = append(colliders, &coll)
 			}
 		}
 	}
@@ -197,11 +199,12 @@ func initialize() {
 		engine.FlipY(eobj, renderedBg.Bounds().Size().Y)
 		engine.ScaleX(eobj, scalingFacX)
 		engine.ScaleY(eobj, scalingFacY)
-		enemies = append(enemies, enemy.NewEnemy(eobj))
-		colliders = append(colliders, pixel.C(pixel.V(eobj.X+8, eobj.Y+8), eobj.Width/2))
+		collider := pixel.C(pixel.V(eobj.X+8, eobj.Y+8), eobj.Width/2)
+		e := enemy.NewEnemy(eobj, &collider)
+		colliders = append(colliders, &collider)
+		enemies = append(enemies, e)
 
 	}
-
 	fmt.Println("use WASD to move camera around")
 	gameloop(win, &tilemap, renderedBg, renderedFg, &startPos, &colliders, &enemies)
 
