@@ -12,5 +12,5 @@ type Critter struct {
 }
 
 func (critter *Critter) Tick(dt float64, entityPos *pixel.Vec, world *tiled.Map) {
-	fmt.Println("AI ticked")
+	fmt.Println(dt)
 }

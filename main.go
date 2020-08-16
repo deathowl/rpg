@@ -195,6 +195,8 @@ func initialize() {
 		engine.ScaleX(eobj, scalingFacX)
 		engine.ScaleY(eobj, scalingFacY)
 		enemies = append(enemies, enemy.NewEnemy(eobj))
+		colliders = append(colliders, pixel.C(pixel.V(eobj.X+8, eobj.Y+8), eobj.Width/2))
+
 	}
 
 	fmt.Println("use WASD to move camera around")

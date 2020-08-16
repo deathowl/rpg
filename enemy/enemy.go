@@ -3,6 +3,7 @@ package enemy
 import (
 	"fmt"
 	"math"
+	"strconv"
 
 	"github.com/deathowl/go-tiled"
 	"github.com/deathowl/rpg/ai"
@@ -21,16 +22,18 @@ const (
 )
 
 type Enemy struct {
-	Sheet   pixel.Picture
-	Anims   map[string][]pixel.Rect
-	Rate    float64
-	Ai      ai.BaseAi
-	Pos     pixel.Vec
-	state   animState
-	Counter float64
-	Dir     float64
-	vel     pixel.Vec
-	frame   pixel.Rect
+	Sheet      pixel.Picture
+	Anims      map[string][]pixel.Rect
+	Rate       float64
+	Ai         ai.BaseAi
+	Pos        pixel.Vec
+	state      animState
+	Counter    float64
+	Dir        float64
+	vel        pixel.Vec
+	frame      pixel.Rect
+	Size       float64
+	SpriteSize float64
 
 	sprite *pixel.Sprite
 }
@@ -38,19 +41,23 @@ type Enemy struct {
 func NewEnemy(eobj *tiled.Object) Enemy {
 	var enemyAi ai.BaseAi
 	var sheet pixel.Picture
+	var sheetsize float64
 	var anims map[string][]pixel.Rect
 	for _, prop := range eobj.Properties {
 		fmt.Println(prop.Name)
 		if prop.Name == "ai" {
 			enemyAi = ai.GetAi(prop.Value)
 		}
+		if prop.Name == "sheetsize" {
+			sheetsize, _ = strconv.ParseFloat(prop.Value, 64)
+		}
 		if prop.Name == "spritesheet" {
-			sheet, anims, _ = engine.LoadAnimationSheet("assets/"+prop.Value+".png", "assets/"+prop.Value+".csv", 64)
+			sheet, anims, _ = engine.LoadAnimationSheet("assets/"+prop.Value+".png", "assets/"+prop.Value+".csv", sheetsize)
 		}
 
 	}
 	return Enemy{Ai: enemyAi, Sheet: sheet, Anims: anims, Rate: 1.0 / 10,
-		Dir: +1, Pos: pixel.V(eobj.X+8, eobj.Y+8)}
+		Dir: +1, Pos: pixel.V(eobj.X+8, eobj.Y+8), Size: eobj.Width, SpriteSize: sheetsize}
 }
 
 func (enemy *Enemy) Update(dt float64, world *tiled.Map) {
@@ -112,6 +119,6 @@ func (enemy *Enemy) Draw(t pixel.Target) {
 	// draw the correct frame with the correct position and direction
 	enemy.sprite.Set(enemy.Sheet, enemy.frame)
 	enemy.sprite.Draw(t, pixel.IM.
-		ScaledXY(pixel.ZV, pixel.V(-enemy.Dir, 1)).
+		ScaledXY(pixel.ZV, pixel.V(-enemy.Dir*(enemy.Size/enemy.SpriteSize), 1*(enemy.Size/enemy.SpriteSize))).
 		Moved(enemy.Pos))
 }
