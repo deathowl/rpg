@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/deathowl/go-tiled"
+	"github.com/deathowl/rpg/enemy"
+	"github.com/deathowl/rpg/engine"
 	"github.com/deathowl/rpg/player"
 	"github.com/deathowl/rpg/world"
 	"github.com/faiface/pixel"
@@ -21,7 +23,7 @@ var (
 	second = time.Tick(time.Second)
 )
 
-func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, renderedFg pixel.Picture, initialPos *pixel.Vec, colliders *[]interface{}) {
+func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, renderedFg pixel.Picture, initialPos *pixel.Vec, colliders *[]interface{}, enemies *[]enemy.Enemy) {
 	batches := make([]*pixel.Batch, 0)
 	var (
 		camPos       = *initialPos
@@ -36,7 +38,7 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 	mat := pixel.IM
 	mat = mat.Moved(win.Bounds().Center())
 	mat = mat.ScaledXY(win.Bounds().Center(), pixel.V(win.Bounds().Size().X/renderedBg.Bounds().Size().X, win.Bounds().Size().Y/renderedBg.Bounds().Size().Y))
-	sheet, anims, err := player.LoadAnimationSheet("assets/sheet.png", "assets/spritesheet.csv", 12)
+	sheet, anims, err := engine.LoadAnimationSheet("assets/sheet.png", "assets/spritesheet.csv", 12)
 	panicIfErr(err)
 	phys := &player.PlayerPhys{
 		RunSpeed:  camSpeed,
@@ -46,7 +48,7 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		Sheet: sheet,
 		Anims: anims,
 		Rate:  1.0 / 10,
-		Dir:   +1,
+		Dir:   -1,
 	}
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
@@ -98,13 +100,15 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 				colliderd.Line(1)
 			}
 		}
-		//imd.Draw(win)
-
 		anim.Update(dt, phys)
 		anim.Draw(win, &camPos)
 		fgsprite.Draw(win, mat)
 		if win.Pressed(pixelgl.KeyRightControl) {
 			colliderd.Draw(win)
+		}
+		for _, e := range *enemies {
+			e.Update(dt, tilemap)
+			e.Draw(win)
 		}
 		frames++
 		select {
@@ -139,11 +143,12 @@ func initialize() {
 	scalingFacX := win.Bounds().Size().X / renderedBg.Bounds().Size().X
 	scalingFacY := win.Bounds().Size().Y / renderedBg.Bounds().Size().Y
 	colliders := make([]interface{}, 0)
+	enemies := make([]enemy.Enemy, 0)
 	for _, ob := range tilemap.ObjectGroups[0].Objects {
 		if ob.Type != "border" {
-			flipY(ob, renderedBg.Bounds().Size().Y)
-			scaleX(ob, scalingFacX)
-			scaleY(ob, scalingFacY)
+			engine.FlipY(ob, renderedBg.Bounds().Size().Y)
+			engine.ScaleX(ob, scalingFacX)
+			engine.ScaleY(ob, scalingFacY)
 		}
 
 		if ob.Type == "start" {
@@ -158,20 +163,20 @@ func initialize() {
 					prevPoint = p
 				} else if idx == len(points)-1 {
 					l1 := pixel.L(pixel.V(ob.X+prevPoint.X, ob.Y+prevPoint.Y), pixel.V(ob.X+p.X, ob.Y+p.Y))
-					LFlipY(&l1, renderedBg.Bounds().Size().Y)
-					LScaleX(&l1, scalingFacX)
-					LScaleY(&l1, scalingFacY)
+					engine.LFlipY(&l1, renderedBg.Bounds().Size().Y)
+					engine.LScaleX(&l1, scalingFacX)
+					engine.LScaleY(&l1, scalingFacY)
 					l2 := pixel.L(pixel.V(ob.X+p.X, ob.Y+p.Y), pixel.V(ob.X+points[0].X, ob.Y+points[0].Y))
-					LFlipY(&l2, renderedBg.Bounds().Size().Y)
-					LScaleX(&l2, scalingFacX)
-					LScaleY(&l2, scalingFacY)
+					engine.LFlipY(&l2, renderedBg.Bounds().Size().Y)
+					engine.LScaleX(&l2, scalingFacX)
+					engine.LScaleY(&l2, scalingFacY)
 					colliders = append(colliders, l1, l2)
 
 				} else {
 					coll := pixel.L(pixel.V(ob.X+prevPoint.X, ob.Y+prevPoint.Y), pixel.V(ob.X+p.X, ob.Y+p.Y))
-					LFlipY(&coll, renderedBg.Bounds().Size().Y)
-					LScaleX(&coll, scalingFacX)
-					LScaleY(&coll, scalingFacY)
+					engine.LFlipY(&coll, renderedBg.Bounds().Size().Y)
+					engine.LScaleX(&coll, scalingFacX)
+					engine.LScaleY(&coll, scalingFacY)
 					colliders = append(colliders, coll)
 					prevPoint = p
 				}
@@ -185,34 +190,16 @@ func initialize() {
 			}
 		}
 	}
+	for _, eobj := range tilemap.ObjectGroups[1].Objects {
+		engine.FlipY(eobj, renderedBg.Bounds().Size().Y)
+		engine.ScaleX(eobj, scalingFacX)
+		engine.ScaleY(eobj, scalingFacY)
+		enemies = append(enemies, enemy.NewEnemy(eobj))
+	}
 
 	fmt.Println("use WASD to move camera around")
-	gameloop(win, &tilemap, renderedBg, renderedFg, &startPos, &colliders)
+	gameloop(win, &tilemap, renderedBg, renderedFg, &startPos, &colliders, &enemies)
 
-}
-
-func flipY(p *tiled.Object, totalHeight float64) {
-	p.Y = totalHeight - p.Y - p.Height
-}
-func scaleX(p *tiled.Object, scalingFac float64) {
-	p.X = p.X * scalingFac
-}
-func scaleY(p *tiled.Object, scalingFac float64) {
-	p.Y = p.Y * scalingFac
-}
-func LFlipY(o *pixel.Line, totalHeight float64) {
-	o.A.Y = totalHeight - o.A.Y - 1
-	o.B.Y = totalHeight - o.B.Y - 1
-
-}
-func LScaleX(o *pixel.Line, scalingFac float64) {
-	o.A.X = o.A.X * scalingFac
-	o.B.X = o.B.X * scalingFac
-
-}
-func LScaleY(o *pixel.Line, scalingFac float64) {
-	o.A.Y = o.A.Y * scalingFac
-	o.B.Y = o.B.Y * scalingFac
 }
 
 func main() {
