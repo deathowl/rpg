@@ -10,7 +10,10 @@ import (
 
 	"github.com/deathowl/go-tiled"
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/text"
+	"github.com/golang/freetype/truetype"
 	"github.com/pkg/errors"
+	"golang.org/x/image/font/gofont/goregular"
 )
 
 func LoadAnimationSheet(sheetPath, descPath string, frameWidth float64) (sheet pixel.Picture, anims map[string][]pixel.Rect, err error) {
@@ -122,4 +125,19 @@ func LScaleX(o *pixel.Line, scalingFac float64) {
 func LScaleY(o *pixel.Line, scalingFac float64) {
 	o.A.Y = o.A.Y * scalingFac
 	o.B.Y = o.B.Y * scalingFac
+}
+
+func DrawText(where pixel.Vec, what string) *text.Text {
+	ttf, err := truetype.Parse(goregular.TTF)
+	if err != nil {
+		panic(err)
+	}
+	face := truetype.NewFace(ttf, &truetype.Options{
+		Size: 12,
+	})
+	where = pixel.V(where.X-45, where.Y+10)
+
+	txt := text.New(where, text.NewAtlas(face, text.ASCII))
+	txt.WriteString(what)
+	return txt
 }

@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.4" tiledversion="1.4.1" orientation="orthogonal" renderorder="right-down" width="58" height="47" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="27">
+<map version="1.4" tiledversion="1.4.1" orientation="orthogonal" renderorder="right-down" width="58" height="47" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="45">
  <tileset firstgid="1" source="beach_tileset.tsx"/>
  <layer id="1" name="Ground" width="58" height="47">
   <data encoding="base64" compression="zlib">
-   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
+   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
   </data>
  </layer>
  <layer id="5" name="groundoverlay" width="58" height="47">
   <data encoding="base64" compression="zlib">
-   eJzt17kNAkEQRNFekgGJVBA43ASBy00c3FccnLEAcVAOHmKtFUzPf1I5O06XZqTWmgEAAACAWTUxqyn15NeTZKunfn1l4LznUv1Wytp5z4v6XZWb85539XsoT+c934q57+f5lHPEpcB7+Gtl3U8l4jsqOe6+iGQnnZ337LJzo9TQu24qLaWtdJy+86F6jZSxMlGmgfecaf75hw4bfdsqO2WvHALvedT8p8A7ICxp/58AAGSNXQTAqxeNZRcW
+   eJzt17kNwkAUhOE1zYBEKwgSboogIeCmDu6rDs5agDoYAksEFpYDxPL8f9Ik3mRH70krOwcAAAAAzpUD5ypKNfj1Tb6rq349pW+850L9lsrKeM+z+l2Uq/GeN/W7Kw/jPUP5zOfzbMw50iXHPnitqPmUUjyjguHu85S8SSdDPTsR+9jmzf0rrxlGzTGpmva6rjSUptIytOfvBuo1VEbKWJl42jOca9xsp7r/LKLDWt82ylbZKXvPeibd2YPuf/SsA2yL+/8EAODbeIsAWPUEsRwaUA==
   </data>
  </layer>
  <layer id="2" name="Fringe" width="58" height="47">
   <data encoding="base64" compression="zlib">
-   eJzt2b0NgzAQhmFjFiFFhBSKQLaIgFlS5QcYhWGyWg7RRnTY4vP7SFchYZ/P5gQ4BwAAgCO7+NgzCKsTzbe0vOYs9izC+CaSJ4C4HqL9Ajiqe2JnssidO+Vhx2zF17j3+u8+S++qdszxbfe+WtQWjcVNYD3Pgc9ZbE+r2cuvtfwI1G+x1R8GuzZaTCK5pkxlvwLAXsoEnpN8pwH+6/lfAkDYD4bdCtc=
+   eJzt2U0KgCAQgFHTi9QihFr0c4sooZt0oA7T1bJVm2hViuP3YLY6IwyDqhQAAABS1ujYGYS1CK3X+rr2InYWYRyZ1Akgrk3ovABSNWXWk6VRqjJh95yFn7HT8u8+1+xqf66x8+v3PgYfo4DzrAP3Gb73Nh9WfQcAAJLZDGYd7zTAM8d/CQDBTrZMB4Q=
   </data>
  </layer>
  <layer id="3" name="Over" width="58" height="47">
   <data encoding="base64" compression="zlib">
-   eJzt109OwkAYhvHpdCnKJaz3UVHOoR5FhIsg/7aoXAG1sFXxCkJ4EkIyNA0NiaSZ6ftLngWExfelLc0YIyIiIiIiIiIiPkgjY2Y0j8qe5MisMRFZ6tIz9WzZQ/2/c3ZK6IKm9E4fHu15x6z39HDAzH/8dkkrD/Z8ZMYWPVGbOpmZxzyHL/RKbzTx9Lnss9eAhjTKuS5f7PVNP7SgX0/3/GS3lGY0z+x5zecTqtEpnVHdg3vUtfN+iPkPjcue6Eic94Prks9XdnMtG55duzzu+yHPDd/fUjOAXasuhPtVRMRn2zNNqIrONKEoOtOEYt+ZJjghn2kykorsKSLVtAbV8y7L
+   eJzt18kJwkAYhuFJcnRrQq1HsBK1FLdG3K9uLbhf3VpQ8QURYhBFUMKM3wPvQfDw/5g4jDEiIiIiIiIiImKDlWfMmjZe3JP8mG+MRz61qE0dP+6hvi/LTjnK04zmtLBozxKzlqnywcwnvnumiwV7VpmxRnVqUDMy85D3cERjmtDU0veyy1496tPgye+yZa8d7elAR0v3XLLbita0iexZ5HOCkpSiNGUseEbDHs6HgP/QIO6JfiR0PoQV/FuuCJ8P4i6XnlkREVvd7zSuenenccW7O40rXt1pnOPynSYi9yd7ish/ugJZAi0R
   </data>
  </layer>
  <objectgroup id="4" name="Objects">
@@ -53,6 +53,10 @@
   </object>
   <object id="20" type="collider" x="341" y="563.5" width="21" height="21"/>
   <object id="21" type="collider" x="708.5" y="438.5" width="21" height="21"/>
+  <object id="39" type="collider" x="482.75" y="480.38" width="43.5" height="2.375"/>
+  <object id="40" type="collider" x="449.75" y="448.25" width="24.75" height="1.875"/>
+  <object id="41" type="collider" x="450.25" y="496.125" width="12.5" height="3.5"/>
+  <object id="42" type="collider" x="500.125" y="416.75" width="9.625" height="2.125"/>
  </objectgroup>
  <objectgroup id="6" name="Enemies">
   <object id="23" name="crab1" x="693" y="400" width="12" height="12">
@@ -65,6 +69,28 @@
    </properties>
    <ellipse/>
   </object>
+  <object id="28" name="crab2" x="194" y="412" width="12" height="12">
+   <properties>
+    <property name="ai" value="critter"/>
+    <property name="health" value="100"/>
+    <property name="movementspeed" type="int" value="10"/>
+    <property name="sheetsize" type="int" value="64"/>
+    <property name="spritesheet" value="crab"/>
+   </properties>
+   <ellipse/>
+  </object>
  </objectgroup>
- <objectgroup id="8" name="NPCs"/>
+ <objectgroup id="8" name="NPCs">
+  <object id="44" name="Vending Machine" x="592.667" y="418" width="18" height="18">
+   <properties>
+    <property name="ai" value="npc"/>
+    <property name="health" type="int" value="0"/>
+    <property name="movementspeed" type="int" value="0"/>
+    <property name="name" value="Vending Machine"/>
+    <property name="sheetsize" type="int" value="32"/>
+    <property name="spritesheet" value="trader1"/>
+   </properties>
+   <ellipse/>
+  </object>
+ </objectgroup>
 </map>

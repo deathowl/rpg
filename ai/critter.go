@@ -6,12 +6,12 @@ import (
 )
 
 type Critter struct {
-	Counter int
+	Counter float64
 }
 
 func (critter *Critter) Tick(dt float64, entityPos pixel.Vec, dir float64, speed float64, colliders *[]interface{}, playerPos *pixel.Vec, ec *pixel.Circle) (pixel.Vec, float64) {
-	critter.Counter++
-	if critter.Counter == 100 {
+	critter.Counter += dt
+	if critter.Counter >= 2 {
 		dir = (-1.0 * dir)
 		critter.Counter = 0
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/deathowl/go-tiled"
 	"github.com/deathowl/rpg/enemy"
 	"github.com/deathowl/rpg/engine"
+	"github.com/deathowl/rpg/npc"
 	"github.com/deathowl/rpg/player"
 	"github.com/deathowl/rpg/world"
 	"github.com/faiface/pixel"
@@ -23,7 +24,7 @@ var (
 	second = time.Tick(time.Second)
 )
 
-func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, renderedFg pixel.Picture, initialPos *pixel.Vec, colliders *[]interface{}, enemies *[]*enemy.Enemy) {
+func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture, renderedFg pixel.Picture, initialPos *pixel.Vec, colliders *[]interface{}, enemies *[]*enemy.Enemy, npcs *[]*npc.NPC) {
 	batches := make([]*pixel.Batch, 0)
 	var (
 		playerPos    = *initialPos
@@ -103,9 +104,24 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		anim.Update(dt, phys)
 		anim.Draw(win, &playerPos)
 		fgsprite.Draw(win, mat)
+
+		bardrawer := imdraw.New(nil)
+		bardrawer.SetMatrix(cam)
+		//bardrawer.Push(playerPos, pixel.V(playerPos.X+10, playerPos.Y+30))
+		bardrawer.Push(win.Bounds().Center(), win.Bounds().Center())
+		//bardrawer.Push(pixel.ZV, pixel.V(pixel.ZV.X+200, pixel.ZV.Y+10))
+		bardrawer.Rectangle(2)
+
+		bardrawer.Draw(win)
 		for _, e := range *enemies {
 			e.Update(dt, colliders, &playerPos)
 			e.Draw(win)
+		}
+		for _, npc := range *npcs {
+			npc.Update(dt)
+			txt := engine.DrawText(npc.Pos, npc.Name)
+			txt.DrawColorMask(win, pixel.IM, colornames.Black)
+			npc.Draw(win)
 		}
 		if win.Pressed(pixelgl.KeyRightControl) {
 			colliderd.Draw(win)
@@ -131,7 +147,7 @@ func initialize() {
 	cfg := pixelgl.WindowConfig{
 		Title:  "Tiled Rpg",
 		Bounds: pixel.R(0, 0, 1280, 1024),
-		VSync:  true,
+		VSync:  false,
 	}
 
 	win, err := pixelgl.NewWindow(cfg)
@@ -147,6 +163,7 @@ func initialize() {
 	scalingFacY := win.Bounds().Size().Y / renderedBg.Bounds().Size().Y
 	colliders := make([]interface{}, 0)
 	enemies := make([]*enemy.Enemy, 0)
+	npcs := make([]*npc.NPC, 0)
 	for _, ob := range tilemap.ObjectGroups[0].Objects {
 		if ob.Type != "border" {
 			engine.FlipY(ob, renderedBg.Bounds().Size().Y)
@@ -205,8 +222,18 @@ func initialize() {
 		enemies = append(enemies, e)
 
 	}
+	for _, eobj := range tilemap.ObjectGroups[2].Objects {
+		engine.FlipY(eobj, renderedBg.Bounds().Size().Y)
+		engine.ScaleX(eobj, scalingFacX)
+		engine.ScaleY(eobj, scalingFacY)
+		collider := pixel.C(pixel.V(eobj.X+8, eobj.Y+8), eobj.Width/2)
+		e := npc.NewNPC(eobj, &collider)
+		colliders = append(colliders, &collider)
+		npcs = append(npcs, e)
+
+	}
 	fmt.Println("use WASD to move camera around")
-	gameloop(win, &tilemap, renderedBg, renderedFg, &startPos, &colliders, &enemies)
+	gameloop(win, &tilemap, renderedBg, renderedFg, &startPos, &colliders, &enemies, &npcs)
 
 }
 

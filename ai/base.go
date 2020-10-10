@@ -12,6 +12,8 @@ func GetAi(aistr string) BaseAi {
 	switch aistr {
 	case "critter":
 		return &Critter{}
+	case "npc":
+		return &Npc{}
 	}
 	panic("INVALID AI TYPE SPECIFIED IN TILEMAP")
 }
