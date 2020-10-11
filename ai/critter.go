@@ -9,7 +9,7 @@ type Critter struct {
 	Counter float64
 }
 
-func (critter *Critter) Tick(dt float64, entityPos pixel.Vec, dir float64, speed float64, colliders *[]interface{}, playerPos *pixel.Vec, ec *pixel.Circle) (pixel.Vec, float64) {
+func (critter *Critter) Tick(dt float64, entityPos pixel.Vec, dir float64, speed float64, colliders *[]interface{}, playerPos *pixel.Vec, ec *pixel.Circle) (pixel.Vec, float64, pixel.Vec) {
 	critter.Counter += dt
 	if critter.Counter >= 2 {
 		dir = (-1.0 * dir)
@@ -27,5 +27,5 @@ func (critter *Critter) Tick(dt float64, entityPos pixel.Vec, dir float64, speed
 	if !engine.CheckCollisions(pixel.V(entityPos.X+(dir*speed*dt), entityPos.Y), &newcolls) {
 		entityPos = pixel.V(entityPos.X+(dir*speed*dt), entityPos.Y)
 	}
-	return entityPos, dir
+	return entityPos, dir, pixel.V(0, 0)
 }

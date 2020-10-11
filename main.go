@@ -20,7 +20,6 @@ import (
 var clearColor = colornames.Black
 
 var (
-	frames = 0
 	second = time.Tick(time.Second)
 )
 
@@ -51,6 +50,8 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		Rate:  1.0 / 10,
 		Dir:   -1,
 	}
+	fpsc := engine.NewFPSWatchSimple()
+	fpsc.Start()
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
 		last = time.Now()
@@ -77,7 +78,12 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 			fmt.Println(playerPos.Y)
 		}
 		camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
-
+		// if camZoom < 3.5 {
+		// 	camZoom = 3.5
+		// }
+		if camZoom > 8.25 {
+			camZoom = 8.25
+		}
 		win.Clear(clearColor)
 
 		// Draw tiles
@@ -105,38 +111,38 @@ func gameloop(win *pixelgl.Window, tilemap *tiled.Map, renderedBg pixel.Picture,
 		anim.Draw(win, &playerPos)
 		fgsprite.Draw(win, mat)
 
-		bardrawer := imdraw.New(nil)
-		bardrawer.SetMatrix(cam)
-		//bardrawer.Push(playerPos, pixel.V(playerPos.X+10, playerPos.Y+30))
-		bardrawer.Push(win.Bounds().Center(), win.Bounds().Center())
-		//bardrawer.Push(pixel.ZV, pixel.V(pixel.ZV.X+200, pixel.ZV.Y+10))
-		bardrawer.Rectangle(2)
-
-		bardrawer.Draw(win)
+		// txt := engine.DrawText(pixel.V(playerPos.X-190, playerPos.Y-118), "HEALTH", colornames.White)
+		// txt.Draw(win, pixel.IM)
+		ebardrawer := imdraw.New(nil)
 		for _, e := range *enemies {
 			e.Update(dt, colliders, &playerPos)
+			ebardrawer.Color = colornames.Red
+			ebardrawer.Push(pixel.V((e.Pos.X-5), (e.Pos.Y+8)), pixel.V(e.Pos.X+5, e.Pos.Y+10))
+			ebardrawer.Rectangle(0)
+			ebardrawer.Draw(win)
 			e.Draw(win)
 		}
+		ebardrawer.Draw(win)
+
 		for _, npc := range *npcs {
 			npc.Update(dt)
-			txt := engine.DrawText(npc.Pos, npc.Name)
-			txt.DrawColorMask(win, pixel.IM, colornames.Black)
+			// txt := engine.DrawText(npc.Pos, npc.Name, colornames.Black)
+			// txt.DrawColorMask(win, pixel.IM, colornames.Black)
 			npc.Draw(win)
 		}
 		if win.Pressed(pixelgl.KeyRightControl) {
 			colliderd.Draw(win)
 		}
-		frames++
-		select {
-		case <-second:
-			if win.Pressed(pixelgl.KeyRightControl) {
-
-			}
-			win.SetTitle(fmt.Sprintf("RPG | FPS: %d", frames))
-			fmt.Println("RPG | FPS: ", frames)
-			frames = 0
-		default:
-		}
+		bardrawer := imdraw.New(nil)
+		bardrawer.Push(pixel.V((playerPos.X-238), (playerPos.Y-120)), pixel.V((playerPos.X-178), playerPos.Y-115))
+		bardrawer.Rectangle(1)
+		bardrawer.Draw(win)
+		bardrawer.Color = colornames.Green
+		bardrawer.Push(pixel.V((playerPos.X-237), (playerPos.Y-119)), pixel.V(playerPos.X-179, playerPos.Y-116))
+		bardrawer.Rectangle(0)
+		bardrawer.Draw(win)
+		fpsc.Poll()
+		fpsc.Draw(win, pixel.V(playerPos.X+100, playerPos.Y+100))
 		win.Update()
 	}
 }
@@ -146,7 +152,7 @@ func initialize() {
 	// Create the window with OpenGL
 	cfg := pixelgl.WindowConfig{
 		Title:  "Tiled Rpg",
-		Bounds: pixel.R(0, 0, 1280, 1024),
+		Bounds: pixel.R(0, 0, 1920, 1080),
 		VSync:  false,
 	}
 

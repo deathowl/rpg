@@ -4,7 +4,9 @@ import (
 	"encoding/csv"
 	"fmt"
 	"image"
+	"image/color"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -13,7 +15,12 @@ import (
 	"github.com/faiface/pixel/text"
 	"github.com/golang/freetype/truetype"
 	"github.com/pkg/errors"
-	"golang.org/x/image/font/gofont/goregular"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
+)
+
+var (
+	atlas *text.Atlas
 )
 
 func LoadAnimationSheet(sheetPath, descPath string, frameWidth float64) (sheet pixel.Picture, anims map[string][]pixel.Rect, err error) {
@@ -127,17 +134,85 @@ func LScaleY(o *pixel.Line, scalingFac float64) {
 	o.B.Y = o.B.Y * scalingFac
 }
 
-func DrawText(where pixel.Vec, what string) *text.Text {
-	ttf, err := truetype.Parse(goregular.TTF)
-	if err != nil {
-		panic(err)
+func DrawText(where pixel.Vec, what string, color color.Color) *text.Text {
+	if atlas == nil {
+		atlas = LoadAtlas("assets/Cormorant-Regular.ttf", 8)
 	}
-	face := truetype.NewFace(ttf, &truetype.Options{
-		Size: 12,
-	})
 	where = pixel.V(where.X-45, where.Y+10)
 
-	txt := text.New(where, text.NewAtlas(face, text.ASCII))
+	txt := text.New(where, atlas)
+	txt.Color = color
 	txt.WriteString(what)
 	return txt
+}
+func LoadAtlas(path string, size float64) *text.Atlas {
+	var face font.Face
+	face, err := loadTrueTypeFontFromFile(path, size)
+	if err != nil {
+		fmt.Println("Failed to load font")
+		face = basicfont.Face7x13
+	}
+
+	return text.NewAtlas(face, text.ASCII, nil)
+}
+
+func loadTrueTypeFontFromFile(path string, size float64) (font.Face, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	face, err := loadTrueTypeFont(bytes, size)
+	if err != nil {
+		return nil, err
+	}
+
+	return face, nil
+}
+
+// LoadTrueTypeFont creates and returns a font face.
+func loadTrueTypeFont(bytes []byte, size float64) (font.Face, error) {
+	font, err := truetype.Parse(bytes)
+	if err != nil {
+		return nil, err
+	}
+	return truetype.NewFace(font, &truetype.Options{
+		Size:              size,
+		GlyphCacheEntries: 1,
+	}), nil
+}
+
+// AnchorY - Top, Middle, Bottom
+type AnchorY int
+
+// enum AnchorY
+const (
+	Top AnchorY = 1 + iota
+	Middle
+	Bottom
+)
+
+// AnchorX - Left, Center, Right
+type AnchorX int
+
+// enum AnchorX
+const (
+	Left AnchorX = 1 + iota
+	Center
+	Right
+)
+
+func VerticesOfRect(r pixel.Rect) []pixel.Vec {
+	return []pixel.Vec{
+		r.Min,
+		pixel.V(r.Max.X, r.Min.Y),
+		r.Max,
+		pixel.V(r.Min.X, r.Max.Y),
+	}
 }

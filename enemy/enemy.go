@@ -64,7 +64,7 @@ func NewEnemy(eobj *tiled.Object, collider *pixel.Circle) *Enemy {
 }
 
 func (enemy *Enemy) Update(dt float64, colliders *[]interface{}, playerPos *pixel.Vec) {
-	enemy.Pos, enemy.Dir = enemy.Ai.Tick(dt, enemy.Pos, enemy.Dir, enemy.RunSpeed, colliders, playerPos, enemy.Collider)
+	enemy.Pos, enemy.Dir, enemy.vel = enemy.Ai.Tick(dt, enemy.Pos, enemy.Dir, enemy.RunSpeed, colliders, playerPos, enemy.Collider)
 	enemy.Counter += dt
 	// determine the new animation state
 	var newState animState
@@ -77,10 +77,10 @@ func (enemy *Enemy) Update(dt float64, colliders *[]interface{}, playerPos *pixe
 		newState = walk
 		aRate = enemy.Rate
 	}
-	if enemy.Pos.X == 0 && enemy.vel.Y > 0 {
+	if enemy.vel.X == 0 && enemy.vel.Y > 0 {
 		newState = walkup
 	}
-	if enemy.Pos.X == 0 && enemy.vel.Y < 0 {
+	if enemy.vel.X == 0 && enemy.vel.Y < 0 {
 		newState = walkdown
 	}
 	enemy.Collider.Center = enemy.Pos
