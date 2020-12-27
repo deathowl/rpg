@@ -4,7 +4,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/deathowl/go-tiled"
+	"github.com/lafriks/go-tiled"
 	"github.com/deathowl/rpg/ai"
 	"github.com/deathowl/rpg/engine"
 	"github.com/faiface/pixel"

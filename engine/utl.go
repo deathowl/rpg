@@ -10,7 +10,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/deathowl/go-tiled"
+	"github.com/lafriks/go-tiled"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/text"
 	"github.com/golang/freetype/truetype"

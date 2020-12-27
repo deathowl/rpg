@@ -5,7 +5,6 @@ import (
 	"math"
 	"time"
 
-	"github.com/deathowl/go-tiled"
 	"github.com/deathowl/rpg/enemy"
 	"github.com/deathowl/rpg/engine"
 	"github.com/deathowl/rpg/npc"
@@ -14,6 +13,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/lafriks/go-tiled"
 	"golang.org/x/image/colornames"
 )
 
